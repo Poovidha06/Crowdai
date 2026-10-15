@@ -29,14 +29,22 @@ jobs:
       - name: Build backend image
         run: |
           docker build \
-            --tag crowd-ai-backend:latest \
-            ./backend
+            --file backend/Dockerfile \
+            --tag crowd-ai-main-backend:latest \
+            .
 
       - name: Build frontend image
         run: |
           docker build \
-            --tag crowd-ai-frontend:latest \
-            ./frontend
+            --file frontend/Dockerfile \
+            --tag crowd-ai-main-frontend:latest \
+            .
+
+      - name: Verify backend image
+        run: docker image inspect crowd-ai-main-backend:latest
+
+      - name: Verify frontend image
+        run: docker image inspect crowd-ai-main-frontend:latest
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -46,16 +54,16 @@ jobs:
 
       - name: Tag and push backend image
         run: |
-          docker tag crowd-ai-backend:latest poovidha/crowd-ai-backend:latest
-          docker tag crowd-ai-backend:latest poovidha/crowd-ai-backend:${{ github.sha }}
+          docker tag crowd-ai-main-backend:latest poovidha/crowd-ai-backend:latest
+          docker tag crowd-ai-main-backend:latest poovidha/crowd-ai-backend:${{ github.sha }}
 
           docker push poovidha/crowd-ai-backend:latest
           docker push poovidha/crowd-ai-backend:${{ github.sha }}
 
       - name: Tag and push frontend image
         run: |
-          docker tag crowd-ai-frontend:latest poovidha/crowd-ai-frontend:latest
-          docker tag crowd-ai-frontend:latest poovidha/crowd-ai-frontend:${{ github.sha }}
+          docker tag crowd-ai-main-frontend:latest poovidha/crowd-ai-frontend:latest
+          docker tag crowd-ai-main-frontend:latest poovidha/crowd-ai-frontend:${{ github.sha }}
 
           docker push poovidha/crowd-ai-frontend:latest
           docker push poovidha/crowd-ai-frontend:${{ github.sha }}
