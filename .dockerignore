@@ -1,0 +1,14 @@
+.git
+.gitignore
+node_modules/
+frontend/node_modules/
+frontend/dist/
+backend/__pycache__/
+backend/.pytest_cache/
+*.py[cod]
+*$py.class
+*.log
+backend/crowdvision.db-shm
+backend/crowdvision.db-wal
+backend/current_browser_view.png
+.env

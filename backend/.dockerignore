@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+current_browser_view.png
+crowdvision.db-shm
+crowdvision.db-wal
+.env
+.git
+.gitignore
