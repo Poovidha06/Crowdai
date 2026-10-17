@@ -1,6 +1,10 @@
 export class AnalyticsWebSocket {
   constructor(url) {
-    this.url = url || `ws://${window.location.hostname}:8000/api/ws/analytics`;
+    const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const defaultHost = typeof window !== 'undefined' ? window.location.host : 'localhost:8000';
+    const envWsUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WS_URL) || null;
+    
+    this.url = url || envWsUrl || `${protocol}//${defaultHost}/api/ws/analytics`;
     this.ws = null;
     this.listeners = [];
     this.reconnectInterval = 3000;

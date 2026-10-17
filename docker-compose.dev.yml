@@ -1,0 +1,61 @@
+# ==============================================================================
+# CrowdVision AI - Docker Compose Specification (Development / Hot-Reload)
+# Usage: docker compose -f docker-compose.dev.yml up --build
+# ==============================================================================
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: crowdvision-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - PROJECT_NAME=CrowdVision AI (Dev)
+      - YOLO_MODEL_PATH=/app/yolov8n.pt
+      - DATABASE_PATH=/app/data/crowdvision.db
+    volumes:
+      # Live-mount backend python files for hot-reloading
+      - ./backend:/app/backend
+      - ./yolov8n.pt:/app/yolov8n.pt
+      - crowdvision-db-dev:/app/data
+    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - crowdvision-dev-net
+
+  frontend:
+    image: node:20-alpine
+    container_name: crowdvision-frontend-dev
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_WS_URL=ws://backend:8000/api/ws/analytics
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - crowdvision-dev-net
+
+volumes:
+  crowdvision-db-dev:
+    name: crowdvision-db-dev
+
+networks:
+  crowdvision-dev-net:
+    name: crowdvision-dev-net
+    driver: bridge
