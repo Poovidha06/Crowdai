@@ -27,10 +27,10 @@ pipeline {
         }
 
         stage('Validate Docker Compose') {
-            steps {
-                sh 'docker compose config --quiet'
-            }
-        }
+    steps {
+        sh 'docker compose config'
+    }
+}
 
         stage('Build Backend Image') {
             steps {
