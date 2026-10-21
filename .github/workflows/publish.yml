@@ -1,4 +1,4 @@
-
+```yaml
 name: Crowd AI - Publish Docker Images
 
 on:
@@ -28,6 +28,8 @@ jobs:
           test -f backend/Dockerfile
           test -f frontend/Dockerfile
           test -f frontend/nginx.conf
+          test -f frontend/package.json
+          test -f frontend/package-lock.json
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -48,9 +50,10 @@ jobs:
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: frontend/Dockerfile
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: |
             poovidha/crowd-ai-frontend:latest
             poovidha/crowd-ai-frontend:${{ github.sha }}
+```
