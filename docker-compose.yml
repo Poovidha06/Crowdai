@@ -1,0 +1,76 @@
+# ==============================================================================
+# CrowdVision AI - Docker Compose Specification (Production)
+# Orchestrates AI Video Detection Backend & React Nginx Frontend
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # Backend Service: FastAPI + Ultralytics YOLOv8 + SQLite (WAL Mode)
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: crowdvision-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - PROJECT_NAME=${PROJECT_NAME:-CrowdVision AI}
+      - PROJECT_TITLE=${PROJECT_TITLE:-Real-Time Crowd Monitoring MVP}
+      - DEFAULT_CAPACITY=${DEFAULT_CAPACITY:-50}
+      - YOLO_MODEL_PATH=/app/yolov8n.pt
+      - DATABASE_PATH=/app/data/crowdvision.db
+    volumes:
+      - crowdvision-db:/app/data
+      - crowdvision-uploads:/app/backend/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - crowdvision-net
+
+  # ----------------------------------------------------------------------------
+  # Frontend Service: React 19 + Tailwind CSS + Nginx Reverse Proxy
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: crowdvision-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - crowdvision-net
+
+# ------------------------------------------------------------------------------
+# Persistent Storage Volumes
+# ------------------------------------------------------------------------------
+volumes:
+  crowdvision-db:
+    name: crowdvision-db
+  crowdvision-uploads:
+    name: crowdvision-uploads
+
+# ------------------------------------------------------------------------------
+# Isolated Bridge Network
+# ------------------------------------------------------------------------------
+networks:
+  crowdvision-net:
+    name: crowdvision-net
+    driver: bridge

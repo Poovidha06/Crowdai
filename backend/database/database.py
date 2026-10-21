@@ -2,8 +2,19 @@ import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "crowdvision.db")
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.abspath(DB_PATH)}"
+DB_PATH = os.getenv("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "..", "crowdvision.db"))
+_default_db = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "crowdvision.db"))
+_target_db = os.path.abspath(DB_PATH)
+
+if _target_db != _default_db and not os.path.exists(_target_db) and os.path.exists(_default_db):
+    try:
+        os.makedirs(os.path.dirname(_target_db), exist_ok=True)
+        import shutil
+        shutil.copy2(_default_db, _target_db)
+    except Exception:
+        pass
+
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{_target_db}")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
