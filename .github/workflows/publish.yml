@@ -55,4 +55,3 @@ jobs:
           tags: |
             poovidha/crowd-ai-frontend:latest
             poovidha/crowd-ai-frontend:${{ github.sha }}
-```
